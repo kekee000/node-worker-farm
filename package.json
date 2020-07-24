@@ -15,7 +15,7 @@
   "main": "./lib/index.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/rvagg/node-worker-farm.git"
+    "url": "https://github.com/NoCoreNode/node-worker-farm.git"
   },
   "dependencies": {
     "errno": "~0.1.7"
