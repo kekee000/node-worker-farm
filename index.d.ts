@@ -19,6 +19,7 @@ type WorkerCallback4 = (arg1: any, arg2: any, arg3: any, arg4: any) => void;
 
 declare namespace Farm {
   export function end(workers: Workers, callback?: Function): void;
+  export function queue(workers: Workers): any;
 
   export interface Workers {
     [x: string]: Workers,
