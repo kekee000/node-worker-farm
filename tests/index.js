@@ -18,10 +18,10 @@ function uniq (ar) {
 
 
 // a child where module.exports = function ...
-tape('simple, exports=function test', function (t) {
+tape('simple, exports=function test', async function (t) {
   t.plan(4)
 
-  let child = workerFarm(childPath)
+  let child = await workerFarm(childPath)
   child(0, function (err, pid, rnd) {
     t.ok(pid > process.pid, 'pid makes sense')
     t.ok(pid < process.pid + 750, 'pid makes sense')
@@ -35,10 +35,10 @@ tape('simple, exports=function test', function (t) {
 
 
 // a child where we have module.exports.fn = function ...
-tape('simple, exports.fn test', function (t) {
+tape('simple, exports.fn test', async function (t) {
   t.plan(4)
 
-  let child = workerFarm(childPath, [ 'run0' ])
+  let child = await workerFarm(childPath, [ 'run0' ])
   child.run0(function (err, pid, rnd) {
     t.ok(pid > process.pid, 'pid makes sense')
     t.ok(pid < process.pid + 750, 'pid makes sense')
@@ -51,15 +51,20 @@ tape('simple, exports.fn test', function (t) {
 })
 
 
-tape('on child', function (t) {
+tape('on child', async function (t) {
     t.plan(2)
 
-    let child = workerFarm({ onChild: function(subprocess) { childPid = subprocess.pid } }, childPath)
-      , childPid = null;
+    let childPid = null;
+    let child = await workerFarm({
+      onChild: function(subprocess) {
+        t.ok(!!subprocess.pid, 'subprocess pid');
+        childPid = subprocess.pid
+      },
+      maxConcurrentWorkers: 1
+    }, childPath);
 
     child(0, function(err, pid) {
-      t.equal(childPid, pid)
-    })
+    });
 
     workerFarm.end(child, function () {
       t.ok(true, 'workerFarm ended')
@@ -69,10 +74,10 @@ tape('on child', function (t) {
 
 // use the returned pids to check that we're using a single child process
 // when maxConcurrentWorkers = 1
-tape('single worker', function (t) {
+tape('single worker', async function (t) {
   t.plan(2)
 
-  let child = workerFarm({ maxConcurrentWorkers: 1 }, childPath)
+  let child = await workerFarm({ maxConcurrentWorkers: 1 }, childPath)
     , pids  = []
     , i     = 10
 
@@ -94,10 +99,10 @@ tape('single worker', function (t) {
 
 // use the returned pids to check that we're using two child processes
 // when maxConcurrentWorkers = 2
-tape('two workers', function (t) {
+tape('two workers', async function (t) {
   t.plan(2)
 
-  let child = workerFarm({ maxConcurrentWorkers: 2 }, childPath)
+  let child = await workerFarm({ maxConcurrentWorkers: 2 }, childPath)
     , pids  = []
     , i     = 10
 
@@ -119,10 +124,14 @@ tape('two workers', function (t) {
 
 // use the returned pids to check that we're using a child process per
 // call when maxConcurrentWorkers = 10
-tape('many workers', function (t) {
+tape('many workers', async function (t) {
   t.plan(2)
 
-  let child = workerFarm({ maxConcurrentWorkers: 10 }, childPath)
+  let child = await workerFarm({
+    maxConcurrentWorkers: 10,
+    // maxConcurrentCallsPerWorker: 1
+    autoStart: true
+  }, childPath)
     , pids  = []
     , i     = 10
 
@@ -142,8 +151,8 @@ tape('many workers', function (t) {
 })
 
 
-tape('auto start workers', function (t) {
-  let child = workerFarm({ maxConcurrentWorkers: 3, autoStart: true }, childPath, ['uptime'])
+tape('auto start workers', async function (t) {
+  let child = await workerFarm({ maxConcurrentWorkers: 3, autoStart: true }, childPath, ['uptime'])
     , pids  = []
     , count = 5
     , i     = count
@@ -166,10 +175,10 @@ tape('auto start workers', function (t) {
 
 // use the returned pids to check that we're using a child process per
 // call when we set maxCallsPerWorker = 1 even when we have maxConcurrentWorkers = 1
-tape('single call per worker', function (t) {
+tape('single call per worker', async function (t) {
   t.plan(2)
 
-  let child = workerFarm({
+  let child = await workerFarm({
           maxConcurrentWorkers: 1
         , maxConcurrentCallsPerWorker: Infinity
         , maxCallsPerWorker: 1
@@ -196,10 +205,10 @@ tape('single call per worker', function (t) {
 
 // use the returned pids to check that we're using a child process per
 // two-calls when we set maxCallsPerWorker = 2 even when we have maxConcurrentWorkers = 1
-tape('two calls per worker', function (t) {
+tape('two calls per worker', async function (t) {
   t.plan(2)
 
-  let child = workerFarm({
+  let child = await workerFarm({
           maxConcurrentWorkers: 1
         , maxConcurrentCallsPerWorker: Infinity
         , maxCallsPerWorker: 2
@@ -225,10 +234,10 @@ tape('two calls per worker', function (t) {
 
 
 // use timing to confirm that one worker will process calls sequentially
-tape('many concurrent calls', function (t) {
+tape('many concurrent calls', async function (t) {
   t.plan(2)
 
-  let child = workerFarm({
+  let child = await workerFarm({
           maxConcurrentWorkers: 1
         , maxConcurrentCallsPerWorker: Infinity
         , maxCallsPerWorker: Infinity
@@ -261,10 +270,10 @@ tape('many concurrent calls', function (t) {
 
 // use timing to confirm that one child processes calls sequentially with
 // maxConcurrentCallsPerWorker = 1
-tape('single concurrent call', function (t) {
+tape('single concurrent call', async function (t) {
   t.plan(2)
 
-  let child = workerFarm({
+  let child = await workerFarm({
           maxConcurrentWorkers: 1
         , maxConcurrentCallsPerWorker: 1
         , maxCallsPerWorker: Infinity
@@ -297,11 +306,11 @@ tape('single concurrent call', function (t) {
 
 
 // use timing to confirm that one child processes *only* 5 calls concurrently
-tape('multiple concurrent calls', function (t) {
+tape('multiple concurrent calls', async function (t) {
   t.plan(2)
 
   let callsPerWorker = 5
-    , child = workerFarm({
+    , child = await workerFarm({
           maxConcurrentWorkers: 1
         , maxConcurrentCallsPerWorker: callsPerWorker
         , maxCallsPerWorker: Infinity
@@ -338,10 +347,10 @@ tape('multiple concurrent calls', function (t) {
 
 // call a method that will die with a probability of 0.5 but expect that
 // we'll get results for each of our calls anyway
-tape('durability', function (t) {
+tape('durability', async function (t) {
   t.plan(3)
 
-  let child = workerFarm({ maxConcurrentWorkers: 2 }, childPath, [ 'killable' ])
+  let child = await workerFarm({ maxConcurrentWorkers: 2 }, childPath, [ 'killable' ])
     , ids   = []
     , pids  = []
     , count = 20
@@ -365,10 +374,10 @@ tape('durability', function (t) {
 
 
 // a callback provided to .end() can and will be called (uses "simple, exports=function test" to create a child)
-tape('simple, end callback', function (t) {
+tape('simple, end callback', async function (t) {
   t.plan(4)
 
-  let child = workerFarm(childPath)
+  let child = await workerFarm(childPath)
   child(0, function (err, pid, rnd) {
     t.ok(pid > process.pid, 'pid makes sense ' + pid + ' vs ' + process.pid)
     t.ok(pid < process.pid + 750, 'pid makes sense ' + pid + ' vs ' + process.pid)
@@ -381,17 +390,14 @@ tape('simple, end callback', function (t) {
 })
 
 
-tape('call timeout test', function (t) {
-  t.plan(3 + 3 + 4 + 4 + 4 + 3 + 1)
+tape('call timeout test', async function (t) {
+  t.plan(3 + 3 + 4 + 4 + 3 + 1)
 
-  let child = workerFarm({ maxCallTime: 250, maxConcurrentWorkers: 1 }, childPath)
-
-  // should come back ok
-  child(50, function (err, pid, rnd) {
-    t.ok(pid > process.pid, 'pid makes sense ' + pid + ' vs ' + process.pid)
-    t.ok(pid < process.pid + 750, 'pid makes sense ' + pid + ' vs ' + process.pid)
-    t.ok(rnd > 0 && rnd < 1, 'rnd result makes sense ' + rnd)
-  })
+  let child = await workerFarm({
+    maxCallTime: 250,
+    maxConcurrentWorkers: 1,
+    // autoStart: true
+  }, childPath)
 
   // should come back ok
   child(50, function (err, pid, rnd) {
@@ -399,13 +405,12 @@ tape('call timeout test', function (t) {
     t.ok(pid < process.pid + 750, 'pid makes sense ' + pid + ' vs ' + process.pid)
     t.ok(rnd > 0 && rnd < 1, 'rnd result makes sense ' + rnd)
   })
-
-  // should die
-  child(500, function (err, pid, rnd) {
-    t.ok(err, 'got an error')
-    t.equal(err.type, 'TimeoutError', 'correct error type')
-    t.ok(pid === undefined, 'no pid')
-    t.ok(rnd === undefined, 'no rnd')
+  
+  // should come back ok
+  child(50, function (err, pid, rnd) {
+    t.ok(pid > process.pid, 'pid makes sense ' + pid + ' vs ' + process.pid)
+    t.ok(pid < process.pid + 750, 'pid makes sense ' + pid + ' vs ' + process.pid)
+    t.ok(rnd > 0 && rnd < 1, 'rnd result makes sense ' + rnd)
   })
 
   // should die
@@ -415,7 +420,7 @@ tape('call timeout test', function (t) {
     t.ok(pid === undefined, 'no pid')
     t.ok(rnd === undefined, 'no rnd')
   })
-
+  
   // should die even though it is only a 100ms task, it'll get caught up
   // in a dying worker
   setTimeout(function () {
@@ -425,8 +430,8 @@ tape('call timeout test', function (t) {
       t.ok(pid === undefined, 'no pid')
       t.ok(rnd === undefined, 'no rnd')
     })
-  }, 200)
-
+  }, 300)
+  
   // should be ok, new worker
   setTimeout(function () {
     child(50, function (err, pid, rnd) {
@@ -441,10 +446,10 @@ tape('call timeout test', function (t) {
 })
 
 
-tape('test error passing', function (t) {
+tape('test error passing', async function (t) {
   t.plan(10)
 
-  let child = workerFarm(childPath, [ 'err' ])
+  let child = await workerFarm(childPath, [ 'err' ])
   child.err('Error', 'this is an Error', function (err) {
     t.ok(err instanceof Error, 'is an Error object')
     t.equal('Error', err.type, 'correct type')
@@ -467,10 +472,10 @@ tape('test error passing', function (t) {
 })
 
 
-tape('test maxConcurrentCalls', function (t) {
+tape('test maxConcurrentCalls', async function (t) {
   t.plan(10)
 
-  let child = workerFarm({ maxConcurrentCalls: 5 }, childPath)
+  let child = await workerFarm({ maxConcurrentCalls: 5 }, childPath)
 
   child(50, function (err) { t.notOk(err, 'no error') })
   child(50, function (err) { t.notOk(err, 'no error') })
@@ -492,10 +497,10 @@ tape('test maxConcurrentCalls', function (t) {
 })
 
 
-tape('test maxConcurrentCalls + queue', function (t) {
+tape('test maxConcurrentCalls + queue', async function (t) {
   t.plan(13)
 
-  let child = workerFarm({ maxConcurrentCalls: 4, maxConcurrentWorkers: 2, maxConcurrentCallsPerWorker: 1 }, childPath)
+  let child = await workerFarm({ maxConcurrentCalls: 4, maxConcurrentWorkers: 2, maxConcurrentCallsPerWorker: 1 }, childPath)
 
   child(20, function (err) { console.log('ended short1'); t.notOk(err, 'no error, short call 1') })
   child(20, function (err) { console.log('ended short2'); t.notOk(err, 'no error, short call 2') })
@@ -528,10 +533,10 @@ tape('test maxConcurrentCalls + queue', function (t) {
 
 // this test should not keep the process running! if the test process
 // doesn't die then the problem is here
-tape('test timeout kill', function (t) {
+tape('test timeout kill', async function (t) {
   t.plan(3)
 
-  let child = workerFarm({ maxCallTime: 250, maxConcurrentWorkers: 1 }, childPath, [ 'block' ])
+  let child = await workerFarm({ maxCallTime: 250, maxConcurrentWorkers: 1 }, childPath, [ 'block' ])
   child.block(function (err) {
     t.ok(err, 'got an error')
     t.equal(err.type, 'TimeoutError', 'correct error type')
@@ -543,12 +548,12 @@ tape('test timeout kill', function (t) {
 })
 
 
-tape('test max retries after process terminate', function (t) {
+tape('test max retries after process terminate', async function (t) {
   t.plan(7)
 
   // temporary file is used to store the number of retries among terminating workers
   let filepath1 = '.retries1'
-  let child1 = workerFarm({ maxConcurrentWorkers: 1, maxRetries: 5}, childPath, [ 'stubborn' ])
+  let child1 = await workerFarm({ maxConcurrentWorkers: 1, maxRetries: 5}, childPath, [ 'stubborn' ])
   child1.stubborn(filepath1, function (err, result) {
     t.notOk(err, 'no error')
     t.equal(result, 12, 'correct result')
@@ -560,7 +565,7 @@ tape('test max retries after process terminate', function (t) {
   })
 
   let filepath2 = '.retries2'
-  let child2 = workerFarm({ maxConcurrentWorkers: 1, maxRetries: 3}, childPath, [ 'stubborn' ])
+  let child2 = await workerFarm({ maxConcurrentWorkers: 1, maxRetries: 3}, childPath, [ 'stubborn' ])
   child2.stubborn(filepath2, function (err, result) {
     t.ok(err, 'got an error')
     t.equal(err.type, 'ProcessTerminatedError', 'correct error type')
@@ -574,7 +579,7 @@ tape('test max retries after process terminate', function (t) {
 })
 
 
-tape('custom arguments can be passed to "fork"', function (t) {
+tape('custom arguments can be passed to "fork"', async function (t) {
   t.plan(3)
 
   // allocate a real, valid path, in any OS
@@ -583,7 +588,7 @@ tape('custom arguments can be passed to "fork"', function (t) {
         cwd      : cwd
       , execArgv : ['--expose-gc']
     }
-    , child = workerFarm({ maxConcurrentWorkers: 1, maxRetries: 5, workerOptions: workerOptions}, childPath, ['args'])
+    , child = await workerFarm({ maxConcurrentWorkers: 1, maxRetries: 5, workerOptions: workerOptions}, childPath, ['args'])
 
   child.args(function (err, result) {
     t.equal(result.execArgv[0], '--expose-gc', 'flags passed (overridden default)')
@@ -596,7 +601,7 @@ tape('custom arguments can be passed to "fork"', function (t) {
 })
 
 
-tape('ensure --debug/--inspect not propagated to children', function (t) {
+tape('ensure --debug/--inspect not propagated to children', async function (t) {
   t.plan(3)
 
   let script   = __dirname + '/debug.js'

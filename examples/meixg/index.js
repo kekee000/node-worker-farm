@@ -13,7 +13,8 @@ let workerFarm = require('../../');
             });
 
             return subProcess;
-        }
+        },
+        asyncInit: true
     }, require.resolve('./child'));
 
     let workerCount = 0;

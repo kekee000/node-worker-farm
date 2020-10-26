@@ -45,6 +45,7 @@ declare namespace Farm {
     maxRetries?: number;
     autoStart?: boolean;
     workerOptions?: ForkOptions;
+    asyncInit: boolean;
   }
 
   export type WorkerCallback =
