@@ -4,7 +4,7 @@ let workerFarm = require('../../');
 (async () => {
     let workers = await workerFarm({
         maxConcurrentWorkers: 10,
-        autoStart: true,
+        autoStart: false,
         onChild(subProcess) {
             workerCount++;
             // console.log(`worker start: ${workerCount}`);

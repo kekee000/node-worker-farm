@@ -6,9 +6,11 @@ process.on('message', m => {
 
 let count = 0;
 
-process.send({
-    owner: 'farm-child'
-});
+setTimeout(() => {
+    process.send({
+        owner: 'farm-child'
+    });
+}, Math.random() * 1000 * 10);
 
 module.exports = function (inp, callback) {
     count++;
@@ -20,5 +22,7 @@ module.exports = function (inp, callback) {
 
     process.send('123123123');
 
-    callback(null, inp + ' BAR (' + process.pid + ')');
+    setTimeout(() => {
+        callback(null, inp + ' BAR (' + process.pid + ')');
+    }, Math.random() * 1000 * 10);
 }
