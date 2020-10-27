@@ -1,9 +1,3 @@
-// console.log('init worker');
-
-process.on('message', m => {
-    // console.log('message', m);
-});
-
 let count = 0;
 
 setTimeout(() => {
@@ -19,8 +13,6 @@ module.exports = function (inp, callback) {
     // if (Math.random() > 0.5) {
     //     throw Error(`errored: ${process.pid}`);
     // }
-
-    process.send('123123123');
 
     setTimeout(() => {
         callback(null, inp + ' BAR (' + process.pid + ')');
