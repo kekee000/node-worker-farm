@@ -1,11 +1,12 @@
 'use strict'
 
-const tape          = require('tape')
-    , child_process = require('child_process')
-    , workerFarm    = require('../')
-    , childPath     = require.resolve('./child')
-    , fs            = require('fs')
-    , os            = require('os')
+const tape = require('tape');
+const child_process = require('child_process');
+const workerFarm = require('../');
+const childPath = require.resolve('./child');
+const asyncChildPath = require.resolve('./async-child');
+const fs = require('fs');
+const os = require('os');
 
 function uniq (ar) {
   let a = [], i, j
@@ -49,6 +50,47 @@ tape('simple, exports.fn test', async function (t) {
     t.ok(true, 'workerFarm ended')
   })
 })
+
+tape('async init', async function(t) {
+  t.plan(4)
+
+  let child = await workerFarm({
+    asyncInit: true
+  }, asyncChildPath);
+  child(0, function (err, pid, rnd) {
+    t.ok(pid > process.pid, 'pid makes sense')
+    t.ok(pid < process.pid + 750, 'pid makes sense')
+    t.ok(rnd >= 0 && rnd < 1, 'rnd result makes sense')
+  })
+
+  workerFarm.end(child, function () {
+    t.ok(true, 'workerFarm ended')
+  })
+});
+
+tape('async init timeout', async function(t) {
+  t.plan(4)
+
+  let child;
+  try {
+    child = await workerFarm({
+      asyncInit: true,
+      maxInitTime: 1000,
+      maxConcurrentWorkers: 1,
+      autoStart: true
+    }, childPath);
+  }
+  catch (e) {
+    t.ok(e, 'got an error');
+    t.equal(e.type, 'WorkerInitError', 'correct error type')
+  }
+
+  t.notOk(child, 'no api');
+
+  workerFarm.end(child, function () {
+    t.ok(true, 'workerFarm ended')
+  })
+});
 
 
 tape('on child', async function (t) {
