@@ -15,16 +15,16 @@ let workerFarm = require('../..');
 
     let count = 0;
 
-    for (let i = 0; i < 10; i++) {
-        workers(i, (err, out) => {
+    setInterval(() => {
+        workers(Math.random() * 10, (err, out) => {
             if (err) {
                 return;
             }
             count++;
             console.log(`completed: ${count}`);
             if (count === 10) {
-                workerFarm.end(workers);
+                // workerFarm.end(workers);
             }
         })
-    }
+    }, 500);
 })();
