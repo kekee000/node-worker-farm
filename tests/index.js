@@ -433,7 +433,7 @@ tape('simple, end callback', async function (t) {
 
 
 tape('call timeout test', async function (t) {
-  t.plan(3 + 3 + 4 + 4 + 3 + 1)
+  t.plan(3 + 3 + 4 + 3 + 1)
 
   let child = await workerFarm({
     maxCallTime: 250,
@@ -463,17 +463,6 @@ tape('call timeout test', async function (t) {
     t.ok(rnd === undefined, 'no rnd')
   })
   
-  // should die even though it is only a 100ms task, it'll get caught up
-  // in a dying worker
-  setTimeout(function () {
-    child(100, function (err, pid, rnd) {
-      t.ok(err, 'got an error')
-      t.equal(err.type, 'TimeoutError', 'correct error type')
-      t.ok(pid === undefined, 'no pid')
-      t.ok(rnd === undefined, 'no rnd')
-    })
-  }, 350)
-  
   // should be ok, new worker
   setTimeout(function () {
     child(50, function (err, pid, rnd) {
@@ -484,7 +473,7 @@ tape('call timeout test', async function (t) {
     workerFarm.end(child, function () {
       t.ok(true, 'workerFarm ended')
     })
-  }, 450);
+  }, 500);
 })
 
 
