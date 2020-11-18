@@ -439,7 +439,7 @@ tape('call timeout test', async function (t) {
     maxCallTime: 250,
     maxConcurrentWorkers: 1,
     // autoStart: true
-  }, childPath)
+  }, childPath);
 
   // should come back ok
   child(50, function (err, pid, rnd) {
@@ -472,7 +472,7 @@ tape('call timeout test', async function (t) {
       t.ok(pid === undefined, 'no pid')
       t.ok(rnd === undefined, 'no rnd')
     })
-  }, 300)
+  }, 350)
   
   // should be ok, new worker
   setTimeout(function () {
@@ -484,7 +484,7 @@ tape('call timeout test', async function (t) {
     workerFarm.end(child, function () {
       t.ok(true, 'workerFarm ended')
     })
-  }, 400)
+  }, 450);
 })
 
 

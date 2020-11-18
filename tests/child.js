@@ -27,9 +27,11 @@ module.exports.run0 = function (callback) {
 
 
 module.exports.killable = function (id, callback) {
-  if (Math.random() < 0.5)
-    return process.exit(-1)
-  callback(null, id, process.pid)
+  setTimeout(() => {
+    if (Math.random() < 0.5)
+      return process.exit(-1)
+    callback(null, id, process.pid)
+  }, 100);
 }
 
 
