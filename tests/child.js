@@ -4,6 +4,11 @@ const fs = require('fs')
 const started = Date.now()
 
 
+process.send({
+    owner: 'farm-child-aaa'
+});
+
+
 module.exports = function (timeout, callback) {
   callback = callback.bind(null, null, process.pid, Math.random(), timeout)
   if (timeout)

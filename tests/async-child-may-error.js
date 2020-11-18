@@ -1,12 +1,12 @@
-'use strict'
-
 setTimeout(() => {
-    process.send({
-        owner: 'farm-child-aaa'
-    });
-    process.send({
-        owner: 'farm-child'
-    });
+    if (Math.random() < 0.5) {
+        process.exit(-1);
+    }
+    else {
+        process.send({
+            owner: 'farm-child'
+        });
+    }
 }, Math.random() * 1000);
 
 module.exports = function (timeout, callback) {
