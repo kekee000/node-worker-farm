@@ -2,7 +2,7 @@
 
 Distribute processing tasks to child processes with an über-simple API and baked-in durability & custom concurrency options.
 
-**Basically the same as worker-farm, except support init worker asynchronously**
+**Basically the same as worker-farm, except supporting init worker asynchronously**
 
 ## Example
 
