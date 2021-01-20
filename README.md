@@ -1,9 +1,8 @@
-# Worker Farm [![Build Status](https://secure.travis-ci.org/rvagg/node-worker-farm.svg)](http://travis-ci.org/rvagg/node-worker-farm)
+# Worker Farm
 
-[![NPM](https://nodei.co/npm/worker-farm.png?downloads=true&downloadRank=true&stars=true)](https://nodei.co/npm/worker-farm/)
+Distribute processing tasks to child processes with an über-simple API and baked-in durability & custom concurrency options.
 
-
-Distribute processing tasks to child processes with an über-simple API and baked-in durability & custom concurrency options. *Available in npm as <strong>worker-farm</strong>*.
+**Basically the same as worker-farm, except supporting init worker asynchronously**
 
 ## Example
 
@@ -11,24 +10,26 @@ Given a file, *child.js*:
 
 ```js
 module.exports = function (inp, callback) {
-  callback(null, inp + ' BAR (' + process.pid + ')')
+    callback(null, inp + ' BAR (' + process.pid + ')')
 }
 ```
 
 And a main file:
 
 ```js
-var workerFarm = require('worker-farm')
-  , workers    = workerFarm(require.resolve('./child'))
-  , ret        = 0
-
-for (var i = 0; i < 10; i++) {
-  workers('#' + i + ' FOO', function (err, outp) {
-    console.log(outp)
-    if (++ret == 10)
-      workerFarm.end(workers)
-  })
-}
+(async () => {
+  let workerFarm = require('../../')
+    , workers    = await workerFarm(require.resolve('./child'))
+    , ret        = 0
+  
+  for (let i = 0; i < 10; i++) {
+    workers('#' + i + ' FOO', function (err, outp) {
+      console.log(outp)
+      if (++ret == 10)
+        workerFarm.end(workers)
+    })
+  }
+})();
 ```
 
 We'll get an output something like the following:
@@ -83,6 +84,8 @@ Worker Farm exports a main function and an `end()` method. The main function set
 
 In its most basic form, you call `workerFarm()` with the path to a module file to be invoked by the child process. You should use an **absolute path** to the module file, the best way to obtain the path is with `require.resolve('./path/to/module')`, this function can be used in exactly the same way as `require('./path/to/module')` but it returns an absolute path.
 
+**This function will return a Promise**
+
 #### `exportedMethods`
 
 If your module exports a single function on `module.exports` then you should omit the final parameter. However, if you are exporting multiple functions on `module.exports` then you should list them in an Array of Strings:
@@ -103,15 +106,16 @@ If you don't provide an `options` object then the following defaults will be use
 
 ```js
 {
-    workerOptions               : {}
-  , maxCallsPerWorker           : Infinity
-  , maxConcurrentWorkers        : require('os').cpus().length
-  , maxConcurrentCallsPerWorker : 10
-  , maxConcurrentCalls          : Infinity
-  , maxCallTime                 : Infinity
-  , maxRetries                  : Infinity
-  , autoStart                   : false
-  , onChild                     : function() {}
+    workerOptions: {},
+    maxCallsPerWorker: Infinity,
+    maxConcurrentWorkers: require('os').cpus().length,
+    maxConcurrentCallsPerWorker: 10,
+    maxConcurrentCalls: Infinity,
+    maxCallTime: Infinity,
+    maxRetries: Infinity,
+    autoStart: false,
+    onChild: function() {},
+    asyncInit: false
 }
 ```
 
@@ -132,6 +136,8 @@ If you don't provide an `options` object then the following defaults will be use
   * **<code>autoStart</code>** when set to `true` will start the workers as early as possible. Use this when your workers have to do expensive initialization. That way they'll be ready when the first request comes through.
 
   * **<code>onChild</code>** when new child process starts this callback will be called with subprocess object as an argument. Use this when you need to add some custom communication with child processes.
+
+  * **<code>asyncInit</code>** when set to true, child process can perform async init initialization. Main file will wait for a message which owner is 'farm-child'. You can find a example in *[examples/async-init](./examples/async-init/)*.
 
 ### workerFarm.end(farm)
 

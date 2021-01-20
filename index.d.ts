@@ -2,14 +2,14 @@ import { ForkOptions } from "child_process";
 
 export = Farm;
 
-declare function Farm(name: string): Farm.Workers;
-declare function Farm(name: string, exportedMethods: string[]): Farm.Workers;
-declare function Farm(options: Farm.FarmOptions, name: string): Farm.Workers;
+declare function Farm(name: string): Promise<Farm.Workers>;
+declare function Farm(name: string, exportedMethods: string[]): Promise<Farm.Workers>;
+declare function Farm(options: Farm.FarmOptions, name: string): Promise<Farm.Workers>;
 declare function Farm(
   options: Farm.FarmOptions,
   name: string,
   exportedMethods: string[],
-): Farm.Workers;
+): Promise<Farm.Workers>;
 
 type WorkerCallback0 = () => void;
 type WorkerCallback1 = (arg1: any) => void;
@@ -45,6 +45,8 @@ declare namespace Farm {
     maxRetries?: number;
     autoStart?: boolean;
     workerOptions?: ForkOptions;
+    asyncInit?: boolean;
+    maxInitTime?: number;
   }
 
   export type WorkerCallback =
