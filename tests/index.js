@@ -435,7 +435,7 @@ tape('simple, end callback', async function (t) {
 
 
 tape('call timeout test', async function (t) {
-    t.plan(3 + 3 + 4 + 3 + 1)
+    t.plan(3 + 3 + 4 + 3 + 3 + 1)
 
     let child = await workerFarm({
         maxCallTime: 250,
@@ -472,10 +472,23 @@ tape('call timeout test', async function (t) {
             t.ok(pid < process.pid + 750, 'pid makes sense ' + pid + ' vs ' + process.pid)
             t.ok(rnd > 0 && rnd < 1, 'rnd result makes sense ' + rnd)
         })
+
+        // should be ok, custom maxCallTime
+        child(1000, {
+            callback(err, pid, rnd) {
+                t.ok(pid > process.pid, 'pid makes sense ' + pid + ' vs ' + process.pid)
+                t.ok(pid < process.pid + 750, 'pid makes sense ' + pid + ' vs ' + process.pid)
+                t.ok(rnd > 0 && rnd < 1, 'rnd result makes sense ' + rnd)
+            },
+            maxCallTime: 2000
+        });
+
         workerFarm.end(child, function () {
             t.ok(true, 'workerFarm ended')
         })
     }, 500);
+
+
 })
 
 
