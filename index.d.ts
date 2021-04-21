@@ -17,22 +17,27 @@ type WorkerCallback2 = (arg1: any, arg2: any) => void;
 type WorkerCallback3 = (arg1: any, arg2: any, arg3: any) => void;
 type WorkerCallback4 = (arg1: any, arg2: any, arg3: any, arg4: any) => void;
 
+
 declare namespace Farm {
+  export interface CallOptions {
+    callback: WorkerCallback,
+    maxCallTime: number
+  }
   export function end(workers: Workers, callback?: Function): void;
   export function queue(workers: Workers): any;
 
   export interface Workers {
     [x: string]: Workers,
-    (callback: WorkerCallback): void;
-    (arg1: any, callback: WorkerCallback): void;
-    (arg1: any, arg2: any, callback: WorkerCallback): void;
-    (arg1: any, arg2: any, arg3: any, callback: WorkerCallback): void;
+    (callback: WorkerCallback | CallOptions): void;
+    (arg1: any, callback: WorkerCallback | CallOptions): void;
+    (arg1: any, arg2: any, callback: WorkerCallback | CallOptions): void;
+    (arg1: any, arg2: any, arg3: any, callback: WorkerCallback | CallOptions): void;
     (
       arg1: any,
       arg2: any,
       arg3: any,
       arg4: any,
-      callback: WorkerCallback,
+      callback: WorkerCallback | CallOptions,
     ): void;
   }
 
