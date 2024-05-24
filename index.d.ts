@@ -1,4 +1,5 @@
-import { ForkOptions } from "child_process";
+import { ChildProcess, ForkOptions } from "child_process";
+import { Worker, WorkerOptions } from "worker_threads";
 
 export = Farm;
 
@@ -41,7 +42,7 @@ declare namespace Farm {
     ): void;
   }
 
-  export interface FarmOptions {
+  export interface FarmOptions extends ForkMode {
     enableWorkerThreads?: boolean;
     maxCallsPerWorker?: number;
     maxConcurrentWorkers?: number;
@@ -50,9 +51,10 @@ declare namespace Farm {
     maxCallTime?: number;
     maxRetries?: number;
     autoStart?: boolean;
-    workerOptions?: ForkOptions;
     asyncInit?: boolean;
     maxInitTime?: number;
+    workerOptions?: ForkOptions | WorkerOptions;
+    onChild?: (child: ChildProcess | Worker, worker: any) => void;
   }
 
   export type WorkerCallback =

@@ -2,7 +2,7 @@
   "name": "@baidu/worker-farm",
   "description": "Distribute processing tasks to child processes with an über-simple API and baked-in durability & custom concurrency options.",
   "version": "1.9.0",
-  "homepage": "https://github.com/NoCoreNode/node-worker-farm",
+  "homepage": "https://github.com/kekee000/node-worker-farm",
   "authors": [
     "Rod Vagg @rvagg <rod@vagg.org> (https://github.com/rvagg)"
   ],
@@ -15,7 +15,7 @@
   "main": "./lib/index.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/NoCoreNode/node-worker-farm.git"
+    "url": "https://github.com/kekee000/node-worker-farm.git"
   },
   "dependencies": {
     "errno": "~0.1.7"
