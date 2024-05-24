@@ -42,6 +42,7 @@ declare namespace Farm {
   }
 
   export interface FarmOptions {
+    enableWorkerThreads?: boolean;
     maxCallsPerWorker?: number;
     maxConcurrentWorkers?: number;
     maxConcurrentCallsPerWorker?: number;

@@ -1,9 +1,11 @@
+const send = (msg) => process.sendToParent(msg);
+
 setTimeout(() => {
     if (Math.random() < 0.5) {
         process.exit(-1);
     }
     else {
-        process.send({
+        send({
             owner: 'farm-child'
         });
     }

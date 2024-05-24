@@ -1,16 +1,17 @@
 'use strict'
+const send = (msg) => process.sendToParent(msg);
 
 const fs = require('fs')
 const started = Date.now()
 
 
-process.send({
+send({
     owner: 'farm-child-aaa'
 });
 
 
 module.exports = function (timeout, callback) {
-  callback = callback.bind(null, null, process.pid, Math.random(), timeout)
+  callback = callback.bind(null, null, process.env.threadId || process.pid, Math.random(), timeout)
   if (timeout)
     return setTimeout(callback, timeout)
   callback()
@@ -35,7 +36,7 @@ module.exports.killable = function (id, callback) {
   setTimeout(() => {
     if (Math.random() < 0.5)
       return process.exit(-1)
-    callback(null, id, process.pid)
+    callback(null, id, process.env.threadId || process.pid)
   }, 100);
 }
 

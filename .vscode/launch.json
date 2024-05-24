@@ -5,13 +5,23 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "type": "node",
+            "name": "Launch Test Thread",
+            "program": "${workspaceFolder}/tests/test-thread.js",
             "request": "launch",
-            "name": "Launch Program",
             "skipFiles": [
                 "<node_internals>/**"
             ],
-            "program": "${file}"
+            "type": "node"
+        },
+
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Launch Test Child",
+            "program": "${workspaceFolder}/tests/test-child.js",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
         }
     ]
 }

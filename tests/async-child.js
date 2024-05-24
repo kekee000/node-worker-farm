@@ -1,10 +1,11 @@
 'use strict'
+const send = (msg) => process.sendToParent(msg);
 
 setTimeout(() => {
-    process.send({
+    send({
         owner: 'farm-child-aaa'
     });
-    process.send({
+    send({
         owner: 'farm-child'
     });
 }, Math.random() * 1000);
