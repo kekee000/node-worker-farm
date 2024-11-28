@@ -9,6 +9,9 @@ send({
     owner: 'farm-child-aaa'
 });
 
+process.on('workerExit', function () {
+  console.log('workerExit', process.env.threadId || process.pid, process.serverStatus);
+});
 
 module.exports = function (timeout, callback) {
   callback = callback.bind(null, null, process.env.threadId || process.pid, Math.random(), timeout)

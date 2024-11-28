@@ -3,7 +3,7 @@
 const workerFarm = require('../');
 
 (async () => {
-  const workers    = await workerFarm(require.resolve('./child'), ['args'])
+  const workers = await workerFarm(require.resolve('./child'), ['args'])
 
   workers.args(function(err, result) {
     console.log(result);
